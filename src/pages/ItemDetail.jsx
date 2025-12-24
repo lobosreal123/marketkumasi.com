@@ -95,6 +95,81 @@ const ItemDetail = () => {
     )
   }
 
+  // Show login prompt for non-logged-in users
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/marketplace"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 mb-6 transition"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Marketplace
+          </Link>
+
+          <div className="bg-white rounded-lg shadow-md overflow-hidden relative">
+            {/* Blurred preview of item */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 sm:p-8 opacity-40 blur-sm">
+              <div>
+                <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden mb-4">
+                  {item.imageUrls && item.imageUrls.length > 0 ? (
+                    <img
+                      src={item.imageUrls[0]}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <span className="text-6xl">📦</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold mb-2">{item.title}</h1>
+                <div className="text-3xl font-bold text-green-600 mb-4">
+                  {formatPrice(item.price)}
+                </div>
+                <p className="text-gray-600">{item.location}</p>
+              </div>
+            </div>
+
+            {/* Login prompt overlay - centered */}
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10">
+              <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md mx-4 text-center border-2 border-green-200">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Create Account to View Details</h2>
+                <p className="text-gray-600 mb-6">
+                  Sign up or log in to see full item details, contact the seller, and view all images.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    to="/marketplace/register"
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold"
+                  >
+                    Create Account
+                  </Link>
+                  <Link
+                    to="/marketplace/login"
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold"
+                  >
+                    Login
+                  </Link>
+                </div>
+                <p className="text-sm text-gray-500 mt-4">
+                  Already have an account? <Link to="/marketplace/login" className="text-green-600 hover:underline font-semibold">Sign in</Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
