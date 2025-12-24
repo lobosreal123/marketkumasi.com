@@ -13,9 +13,11 @@ const ItemDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [deleting, setDeleting] = useState(false)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false)
+  const [itemLoading, setItemLoading] = useState(true)
 
   useEffect(() => {
     const loadItem = async () => {
+      setItemLoading(true)
       const itemData = await fetchItem(itemId)
       if (itemData) {
         setItem(itemData)
@@ -28,6 +30,7 @@ const ItemDetail = () => {
           setShowLoginPrompt(true)
         }
       }
+      setItemLoading(false)
     }
     loadItem()
   }, [itemId, currentUser])
@@ -67,8 +70,8 @@ const ItemDetail = () => {
 
   const isOwner = currentUser && item && item.sellerId === currentUser.uid
 
-  // Don't show loading state if we're showing login prompt
-  if (loading && !item && currentUser) {
+  // Show loading state while fetching item
+  if (itemLoading || (!item && loading)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -79,11 +82,13 @@ const ItemDetail = () => {
     )
   }
 
-  if (!item) {
+  // Only show "Item Not Found" after loading is complete and item is still null
+  if (!item && !itemLoading && !loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Item Not Found</h2>
+          <p className="text-gray-600 mb-6">The item you're looking for doesn't exist or has been removed.</p>
           <Link
             to="/marketplace"
             className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
