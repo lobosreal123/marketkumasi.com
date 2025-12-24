@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useMarketplace } from '../context/MarketplaceContext'
-import { MapPin, Eye, User, Mail, Calendar, Edit, Trash2, ArrowLeft } from 'lucide-react'
+import { MapPin, Eye, User, Mail, Calendar, Edit, Trash2, ArrowLeft, Lock } from 'lucide-react'
 
 const ItemDetail = () => {
   const { itemId } = useParams()
@@ -12,17 +12,25 @@ const ItemDetail = () => {
   const [item, setItem] = useState(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [deleting, setDeleting] = useState(false)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
 
   useEffect(() => {
     const loadItem = async () => {
       const itemData = await fetchItem(itemId)
       if (itemData) {
         setItem(itemData)
-        await incrementViews(itemId)
+        
+        // Only increment views if user is logged in
+        if (currentUser) {
+          await incrementViews(itemId)
+        } else {
+          // Show login prompt for non-logged-in users
+          setShowLoginPrompt(true)
+        }
       }
     }
     loadItem()
-  }, [itemId])
+  }, [itemId, currentUser])
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-GH', {
@@ -59,7 +67,8 @@ const ItemDetail = () => {
 
   const isOwner = currentUser && item && item.sellerId === currentUser.uid
 
-  if (loading && !item) {
+  // Don't show loading state if we're showing login prompt
+  if (loading && !item && currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

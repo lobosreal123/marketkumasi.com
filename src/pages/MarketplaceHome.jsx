@@ -160,7 +160,7 @@ const MarketplaceHome = () => {
                 <Link
                   key={item.id}
                   to={`/marketplace/item/${item.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow group"
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow group relative"
                 >
                   <div className="relative aspect-square bg-gray-200 overflow-hidden">
                     {item.imageUrls && item.imageUrls.length > 0 ? (
