@@ -130,7 +130,12 @@ const MarketplaceHome = () => {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">No active items found. Be the first to list something!</p>
+            <p className="text-gray-600 text-lg mb-2">No active items found.</p>
+            {currentUser && currentUser.role === 'admin' && (
+              <p className="text-sm text-gray-500 mb-4">
+                Items need admin approval before they appear in the marketplace. Check the admin panel to approve pending items.
+              </p>
+            )}
             {currentUser && (
               <Link
                 to="/marketplace/create"
@@ -138,6 +143,11 @@ const MarketplaceHome = () => {
               >
                 List Your First Item
               </Link>
+            )}
+            {!currentUser && (
+              <p className="text-sm text-gray-500 mt-4">
+                <Link to="/marketplace/register" className="text-green-600 hover:underline">Sign up</Link> to start listing items
+              </p>
             )}
           </div>
         ) : (

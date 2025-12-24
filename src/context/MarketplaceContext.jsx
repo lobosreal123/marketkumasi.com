@@ -44,11 +44,9 @@ export const MarketplaceProvider = ({ children }) => {
     setLoading(true)
     try {
       const itemsRef = collection(db, 'marketplaceItems')
-      // Use simpler query without orderBy to avoid index requirement
-      // We'll sort client-side instead
-      const q = query(itemsRef, where('status', '==', 'active'))
-      
-      const snapshot = await getDocs(q)
+      // Fetch all items first, then filter client-side
+      // This handles items that might not have status field (older items)
+      const snapshot = await getDocs(itemsRef)
       let itemsData = []
       
       snapshot.forEach(doc => {
@@ -56,7 +54,19 @@ export const MarketplaceProvider = ({ children }) => {
         itemsData.push({ id: doc.id, ...data })
       })
 
-      console.log(`Fetched ${itemsData.length} active items from Firestore`)
+      console.log(`Fetched ${itemsData.length} total items from Firestore`)
+
+      // Filter for active items (or items without status field - treat as active for backwards compatibility)
+      itemsData = itemsData.filter(item => {
+        // If no status field, treat as active (backwards compatibility)
+        if (!item.status) {
+          console.log(`Item ${item.id} has no status field, treating as active`)
+          return true
+        }
+        return item.status === 'active'
+      })
+
+      console.log(`Filtered to ${itemsData.length} active items`)
 
       // Sort by createdAt client-side (newest first)
       itemsData.sort((a, b) => {
@@ -192,6 +202,8 @@ export const MarketplaceProvider = ({ children }) => {
         imageUrls: [],
         views: 0
       }
+
+      console.log('Creating item with status:', newItem.status)
 
       const docRef = await addDoc(collection(db, 'marketplaceItems'), newItem)
 
