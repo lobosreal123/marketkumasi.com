@@ -44,7 +44,17 @@ const Register = () => {
       navigate('/marketplace/login')
       alert('Registration successful! Your account is pending admin approval. You will be able to login once approved.')
     } else {
-      setError(result.error || 'Registration failed')
+      const errorMsg = result.error || 'Registration failed'
+      console.error('Registration error:', errorMsg)
+      console.error('Error details:', result.errorDetails)
+      setError(errorMsg)
+      
+      // Show additional help for common issues
+      if (errorMsg.includes('permission') || errorMsg.includes('Permission denied')) {
+        setError(errorMsg + ' Make sure Firestore security rules allow user creation.')
+      } else if (errorMsg.includes('not enabled')) {
+        setError(errorMsg + ' Go to Firebase Console → Authentication → Sign-in method → Enable Email/Password')
+      }
     }
   }
 

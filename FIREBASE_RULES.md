@@ -32,7 +32,9 @@ service cloud.firestore {
       allow update: if isAdmin();
       
       // Allow creating user documents during registration
-      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // IMPORTANT: This allows authenticated users to create their own user document
+      allow create: if isAuthenticated() && request.auth.uid == userId && 
+        request.resource.data.email == request.auth.token.email;
     }
     
     // Marketplace items collection

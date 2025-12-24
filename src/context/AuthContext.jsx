@@ -29,10 +29,37 @@ export const AuthProvider = ({ children }) => {
   // Register new user
   const register = async (email, password, name) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      await updateProfile(userCredential.user, { displayName: name })
+      console.log('Starting registration for:', email)
+      console.log('Firebase config check:', {
+        authDomain: auth.app.options.authDomain,
+        projectId: auth.app.options.projectId
+      })
+
+      // Step 1: Create Firebase Auth user
+      console.log('Step 1: Creating Firebase Auth user...')
+      let userCredential
+      try {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        console.log('✅ Firebase Auth user created:', userCredential.user.uid)
+      } catch (authError) {
+        console.error('❌ Firebase Auth error:', authError)
+        console.error('Error code:', authError.code)
+        console.error('Error message:', authError.message)
+        throw authError
+      }
+
+      // Step 2: Update profile
+      console.log('Step 2: Updating profile...')
+      try {
+        await updateProfile(userCredential.user, { displayName: name })
+        console.log('✅ Profile updated')
+      } catch (profileError) {
+        console.error('❌ Profile update error:', profileError)
+        // Continue anyway, profile update is not critical
+      }
       
-      // Create user document in Firestore
+      // Step 3: Create user document in Firestore
+      console.log('Step 3: Creating Firestore user document...')
       const userDoc = {
         email: email,
         name: name,
@@ -41,13 +68,35 @@ export const AuthProvider = ({ children }) => {
         createdAt: new Date().toISOString()
       }
       
-      await setDoc(doc(db, 'users', userCredential.user.uid), userDoc)
+      try {
+        await setDoc(doc(db, 'users', userCredential.user.uid), userDoc)
+        console.log('✅ Firestore document created successfully')
+      } catch (firestoreError) {
+        console.error('❌ Firestore error:', firestoreError)
+        console.error('Error code:', firestoreError.code)
+        console.error('Error message:', firestoreError.message)
+        
+        // If Firestore fails but Auth succeeded, we still have a user
+        // Delete the Auth user to keep things clean
+        try {
+          await userCredential.user.delete()
+          console.log('Cleaned up Auth user due to Firestore error')
+        } catch (deleteError) {
+          console.error('Could not clean up Auth user:', deleteError)
+        }
+        
+        throw firestoreError
+      }
       
+      console.log('✅ Registration completed successfully')
       return { 
         success: true, 
         message: 'Registration successful!'
       }
     } catch (error) {
+      console.error('Registration failed with error:', error)
+      console.error('Full error object:', JSON.stringify(error, null, 2))
+      
       let errorMessage = 'Registration failed'
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = 'Email already registered'
@@ -55,8 +104,17 @@ export const AuthProvider = ({ children }) => {
         errorMessage = 'Password should be at least 6 characters'
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address'
+      } else if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Email/Password authentication is not enabled. Please enable it in Firebase Console → Authentication → Sign-in method'
+      } else if (error.code === 'permission-denied' || error.message?.includes('permission')) {
+        errorMessage = 'Permission denied. Check Firestore security rules. Error: ' + error.message
+      } else if (error.code === 'unavailable') {
+        errorMessage = 'Firebase service is temporarily unavailable. Please try again later.'
+      } else {
+        errorMessage = `Registration failed: ${error.message || error.code || 'Unknown error'}`
       }
-      return { success: false, error: errorMessage }
+      
+      return { success: false, error: errorMessage, errorDetails: error }
     }
   }
 
