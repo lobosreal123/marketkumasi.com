@@ -57,6 +57,14 @@ A modern online marketplace similar to eBay, built with React and Firebase. User
    npm run build
    ```
 
+5. **Deploy to hosting**:
+   - The `dist` folder contains your production build
+   - Make sure your hosting server is configured to serve `index.html` for all routes
+   - See deployment configuration files:
+     - `public/_redirects` - For Netlify/Cloudflare Pages
+     - `public/.htaccess` - For Apache servers
+     - `vercel.json` - For Vercel
+
 ## Firebase Setup
 
 See `FIREBASE_RULES.md` for detailed Firestore and Storage security rules.
