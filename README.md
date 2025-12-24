@@ -63,14 +63,23 @@ See `FIREBASE_RULES.md` for detailed Firestore and Storage security rules.
 
 ## Creating an Admin User
 
-To create an admin user:
-1. Register a user through the app
-2. Go to Firestore Console → `users` collection
-3. Find the user document (by their user ID)
-4. Edit the document and add: `role: "admin"` (as a string)
-5. Save
+### Quick Setup:
+1. **Register the account** through the app at `/marketplace/register`
+   - Email: brains494@icloud.com
+   - Password: Brains123.#
+   - Name: ibrahim mohammed
 
-The admin will then have access to the admin panel at `/marketplace/admin`
+2. **Go to Firebase Console** → Firestore Database → `users` collection
+
+3. **Find the user document** (by email or user ID from Firebase Authentication)
+
+4. **Edit the document** and set:
+   - `role: "admin"` (string)
+   - `status: "approved"` (string)
+
+5. **Save** - The user can now login and access `/marketplace/admin`
+
+For detailed instructions, see [ADMIN_SETUP.md](./ADMIN_SETUP.md)
 
 ## Project Structure
 
